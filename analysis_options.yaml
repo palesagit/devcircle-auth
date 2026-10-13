@@ -1,0 +1,21 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    missing_required_param: error
+    missing_return: error
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - lib/firebase_options.dart
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_print
+    - avoid_empty_else
+    - prefer_const_constructors
+    - prefer_const_literals_to_create_immutables
+    - prefer_single_quotes
+    - use_key_in_widget_constructors
+    - sort_child_properties_last
