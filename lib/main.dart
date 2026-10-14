@@ -29,3 +29,34 @@ class DevCircleApp extends StatelessWidget {
     );
   }
 }
+
+// Shows the app if logged in, otherwise the sign-up / log-in screens.
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  bool _showLogin = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
+        }
+        if (snapshot.hasData) return const HomePage();
+
+        void toggle() => setState(() => _showLogin = !_showLogin);
+        return _showLogin
+            ? LoginPage(onSwitch: toggle)
+            : SignUpPage(onSwitch: toggle);
+      },
+    );
+  }
+}
