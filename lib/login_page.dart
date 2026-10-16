@@ -44,3 +44,67 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) setState(() => _loading = false);
     }
   }
+  
+  void _showNoAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('No account found'),
+        content: const Text(
+            'We couldn\'t find an account with that email. Would you like to create one?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              widget.onSwitch(); // go to the sign-up screen
+            },
+            child: const Text('Create Account'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Log in to DevCircle')),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          TextField(
+            controller: _email,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+                labelText: 'Email', border: OutlineInputBorder()),
+          ),
+          const SizedBox(height: 12),
+          PasswordField(controller: _password),
+          if (_error != null) ...[
+            const SizedBox(height: 12),
+            Text(_error!, style: const TextStyle(color: Colors.red)),
+          ],
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _loading ? null : _logIn,
+            child: const Text('Log In'),
+          ),
+          TextButton(
+            onPressed: widget.onSwitch,
+            child: const Text('Don\'t have an account? Sign up'),
+          ),
+        ],
+      ),
+    );
+  }
+}
