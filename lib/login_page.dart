@@ -18,6 +18,11 @@ class _LoginPageState extends State<LoginPage> {
   String? _error;
 
   Future<void> _logIn() async {
+    if (_email.text.trim().isEmpty || _password.text.isEmpty) {
+      setState(() => _error = 'Please enter your email and password.');
+      return;
+    }
+
     setState(() {
       _loading = true;
       _error = null;
@@ -34,7 +39,13 @@ class _LoginPageState extends State<LoginPage> {
         _showNoAccountDialog();
       } else if (e.code == 'wrong-password' ||
           e.code == 'invalid-credential') {
-        setState(() => _error = 'Email or password is incorrect.');
+        setState(
+          () => _error = 'Email or password is incorrect. No account yet? Tap "Sign up" below.',
+        );
+      } else if (e.code == 'too-many-requests') {
+        setState(() => _error = 'Too many attempts. Try again in a minute.');
+      } else if (e.code == 'network-request-failed') {
+        setState(() => _error = 'No internet connection.');
       } else if (e.code == 'invalid-email') {
         setState(() => _error = 'That email address doesn\'t look right.');
       } else {
@@ -44,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) setState(() => _loading = false);
     }
   }
-  
+
   void _showNoAccountDialog() {
     showDialog(
       context: context,
@@ -97,7 +108,13 @@ class _LoginPageState extends State<LoginPage> {
           const SizedBox(height: 16),
           FilledButton(
             onPressed: _loading ? null : _logIn,
-            child: const Text('Log In'),
+            child: _loading
+                ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Log In'),
           ),
           TextButton(
             onPressed: widget.onSwitch,
