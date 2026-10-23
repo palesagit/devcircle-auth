@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'password_field.dart';
-import 'shell_widgets.dart';
+import 'shell_widgets.dart'; 
 
 class SignUpPage extends StatefulWidget {
   final VoidCallback onSwitch;
@@ -31,7 +31,7 @@ class _SignUpPageState extends State<SignUpPage> {
       return;
     }
 
-    // check the password length before calling Firebase
+    //  check the password length before calling Firebase
     if (password.length < 6) {
       setState(() => _error = 'Password needs at least 6 characters.');
       return;
@@ -58,7 +58,7 @@ class _SignUpPageState extends State<SignUpPage> {
       });
       // AuthGate notices the login and shows HomePage automatically.
     } on FirebaseAuthException catch (e) {
-      if (!mounted) return; // ADDED: the screen may already be closed
+      if (!mounted) return; //  the screen may already be closed
       setState(() {
         switch (e.code) {
           case 'email-already-in-use':
@@ -72,7 +72,7 @@ class _SignUpPageState extends State<SignUpPage> {
         }
       });
     } catch (e) {
-      // the account exists but saving the profile failed (e.g. rules
+      //  the account exists but saving the profile failed (e.g. rules
       // not published). HomePage still works because it handles a missing profile.
       if (mounted) setState(() => _error = 'Account created, but your profile could not be saved.');
     } finally {
@@ -95,6 +95,9 @@ class _SignUpPageState extends State<SignUpPage> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          // brand logo at the top
+          const Center(child: CircleTile(label: 'DC', selected: true, size: 64)),
+          const SizedBox(height: 20),
           const Text('What kind of email are you signing up with?'),
           const SizedBox(height: 8),
           SegmentedButton<bool>(
@@ -122,7 +125,9 @@ class _SignUpPageState extends State<SignUpPage> {
           PasswordField(controller: _password),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: Colors.red)),
+            //  uses the theme's error colour (readable on dark)
+            Text(_error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ],
           const SizedBox(height: 16),
           FilledButton(
