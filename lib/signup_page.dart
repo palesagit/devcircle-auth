@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'password_field.dart';
+import 'shell_widgets.dart';
 
 class SignUpPage extends StatefulWidget {
   final VoidCallback onSwitch;
@@ -30,6 +31,12 @@ class _SignUpPageState extends State<SignUpPage> {
       return;
     }
 
+    // check the password length before calling Firebase
+    if (password.length < 6) {
+      setState(() => _error = 'Password needs at least 6 characters.');
+      return;
+    }
+
     setState(() {
       _loading = true;
       _error = null;
@@ -51,6 +58,7 @@ class _SignUpPageState extends State<SignUpPage> {
       });
       // AuthGate notices the login and shows HomePage automatically.
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return; // ADDED: the screen may already be closed
       setState(() {
         switch (e.code) {
           case 'email-already-in-use':
@@ -63,6 +71,10 @@ class _SignUpPageState extends State<SignUpPage> {
             _error = e.message ?? 'Something went wrong.';
         }
       });
+    } catch (e) {
+      // the account exists but saving the profile failed (e.g. rules
+      // not published). HomePage still works because it handles a missing profile.
+      if (mounted) setState(() => _error = 'Account created, but your profile could not be saved.');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
