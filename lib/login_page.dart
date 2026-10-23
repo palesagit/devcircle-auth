@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'forgot_password_page.dart'; 
 import 'password_field.dart';
+import 'shell_widgets.dart'; 
 
 class LoginPage extends StatefulWidget {
   final VoidCallback onSwitch;
@@ -18,11 +20,11 @@ class _LoginPageState extends State<LoginPage> {
   String? _error;
 
   Future<void> _logIn() async {
+    // check the fields before calling Firebase
     if (_email.text.trim().isEmpty || _password.text.isEmpty) {
       setState(() => _error = 'Please enter your email and password.');
       return;
     }
-
     setState(() {
       _loading = true;
       _error = null;
@@ -35,13 +37,15 @@ class _LoginPageState extends State<LoginPage> {
       );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
+      //  return 'invalid-credential' for an
+      // unknown email, so 'user-not-found' alone is no longer reliable.
       if (e.code == 'user-not-found') {
         _showNoAccountDialog();
       } else if (e.code == 'wrong-password' ||
           e.code == 'invalid-credential') {
-        setState(
-          () => _error = 'Email or password is incorrect. No account yet? Tap "Sign up" below.',
-        );
+        setState(() => _error =
+            'Email or password is incorrect. No account yet? Tap "Sign up" below.');
+      
       } else if (e.code == 'too-many-requests') {
         setState(() => _error = 'Too many attempts. Try again in a minute.');
       } else if (e.code == 'network-request-failed') {
@@ -55,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) setState(() => _loading = false);
     }
   }
-
+  
   void _showNoAccountDialog() {
     showDialog(
       context: context,
@@ -93,6 +97,9 @@ class _LoginPageState extends State<LoginPage> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          // brand logo at the top
+          const Center(child: CircleTile(label: 'DC', selected: true, size: 64)),
+          const SizedBox(height: 20),
           TextField(
             controller: _email,
             keyboardType: TextInputType.emailAddress,
@@ -101,19 +108,35 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const SizedBox(height: 12),
           PasswordField(controller: _password),
+          // forgot password link
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      ForgotPasswordPage(initialEmail: _email.text.trim()),
+                ),
+              ),
+              child: const Text('Forgot password?'),
+            ),
+          ),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: Colors.red)),
+            // uses the theme's error colour (readable on dark)
+            Text(_error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ],
           const SizedBox(height: 16),
           FilledButton(
             onPressed: _loading ? null : _logIn,
+            // shows a spinner while logging in (like the sign-up page)
             child: _loading
                 ? const SizedBox(
                     height: 18,
                     width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Log In'),
           ),
           TextButton(
