@@ -1,8 +1,52 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if signedIn() && request.auth.uid == uid;
+      match /reads/{readId} {
+        allow read, write: if signedIn() && request.auth.uid == uid;
+      }
+    }
+
+    // Shared community data
+    match /circles/{circleId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.createdBy == request.auth.uid;
+
+      match /topics/{topicId} {
+        allow read: if signedIn();
+        allow create: if signedIn() && request.resource.data.createdBy == request.auth.uid;
+        
+        // the only change allowed later: the message counter + last message time
+        allow update: if signedIn() &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['messageCount', 'lastMessageAt']);
+
+        match /messages/{messageId} {
+          allow read: if signedIn();
+          allow create: if signedIn() &&
+            request.resource.data.senderId == request.auth.uid &&
+            request.resource.data.text is string &&
+            request.resource.data.text.size() > 0 &&
+            request.resource.data.text.size() <= 2000;
+        }
+      }
+
+      match /resources/{resourceId} {
+        allow read: if signedIn();
+        allow create: if signedIn() && request.resource.data.createdBy == request.auth.uid;
+      }
+
+      match /meetings/{meetingId} {
+        allow read: if signedIn();
+        allow create: if signedIn() && request.resource.data.createdBy == request.auth.uid;
+      }
     }
   }
 }
