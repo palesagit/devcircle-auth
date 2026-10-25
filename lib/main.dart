@@ -2,15 +2,61 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+//needed for the background message handler below
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 import 'firebase_options.dart';
 import 'home_page.dart';
 import 'login_page.dart';
 import 'signup_page.dart';
+import 'theme.dart'; 
+
+// runs when a notification arrives while the app is closed/in background.
+// It must be a top-level function (not inside a class).
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // if Firebase isn't configured yet, show a helpful screen
+  // instead of a blank crash.
+  try {
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    runApp(SetupErrorApp(error: e.toString()));
+    return;
+  }
+  // register the background handler (FCM codelab)
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(const DevCircleApp());
+}
+
+//shown only when Firebase setup is missing
+class SetupErrorApp extends StatelessWidget {
+  final String error;
+  const SetupErrorApp({super.key, required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Text(
+              'Firebase is not set up yet.\n\n'
+              'Run `flutterfire configure` in the project folder, then restart.\n\n'
+              'Details: $error',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class DevCircleApp extends StatelessWidget {
@@ -21,10 +67,8 @@ class DevCircleApp extends StatelessWidget {
     return MaterialApp(
       title: 'DevCircle',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF8E5FC1)),
-      ),
+      // shared dark theme
+      theme: buildAppTheme(),
       home: const AuthGate(),
     );
   }
