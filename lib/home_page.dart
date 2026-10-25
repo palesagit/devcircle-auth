@@ -12,44 +12,6 @@ import 'shell_widgets.dart';
 import 'sidebar.dart'; 
 import 'theme.dart';
 
-class LegacyHomePage extends StatelessWidget {
-  const LegacyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('DevCircle'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => FirebaseAuth.instance.signOut(),
-          ),
-        ],
-      ),
-      body: Center(
-        child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('users')
-              .doc(uid)
-              .snapshots(),
-          builder: (context, snapshot) {
-            final data = snapshot.data?.data();
-            if (data == null) return const CircularProgressIndicator();
-            return Text(
-              'Welcome, ${data['username']}!\nSigned up with a ${data['emailType']} email.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge,
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
 // the home screen is now the REAL app. Everything comes from Cloud
 // Firestore, so all signed-in users share the same circles, topics, messages,
 // resources and meetings, and a new user sees the whole history.
