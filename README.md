@@ -77,12 +77,27 @@ flutterfire configure                            # choose your project; tick and
 
 ## Commands to run (for the demo)
 
+### Automated checks
+
+Run these from the project directory before the live demo:
+
 ```bash
 cd devcircle-auth
-flutter pub get                 # packages
-flutter analyze                 # should say "No issues found"
-flutter test                    # should say "All tests passed"
-flutter run -d chrome           # run in the browser
+flutter pub get
+flutter analyze
+flutter test
+flutter build web --release
+```
+
+The tests cover slug normalization and password-field visibility. They do not
+connect to Firebase or verify live authentication, Firestore synchronization,
+or push-notification delivery; use the two-user check below and test
+notifications on a configured device for those behaviors.
+
+### Run the app
+
+```bash
+flutter run -d chrome
 ```
 
 ### Verify shared chat history with two users
